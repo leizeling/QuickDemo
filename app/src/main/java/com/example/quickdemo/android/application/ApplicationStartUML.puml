@@ -1,0 +1,41 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+==main入口 ==
+->ActivityThread:main()
+ActivityThread->ActivityThread:attach(boolean system, long startSeq)
+ActivityThread->ActivityManager:getService()
+
+ActivityThread<--ActivityManager:return IActivityManager
+==向AMS绑定ApplicationThread ==
+ActivityThread -> IActivityManager:attachApplication(ApplicationThread, startSeq)
+IActivityManager -> IBinder
+IBinder -> AMS
+AMS --> IBinder
+box "Binder for IPC" #LightBlue
+participant IActivityManager
+participant IBinder
+participant AMS
+end box
+== AMS调用ApplicationThread bindApplication()方法 ==
+IBinder-> ActivityThread.ApplicationThread:bindApplication()
+ActivityThread.ApplicationThread->ActivityThread:sendMessage(H.BIND_APPLICATION, data)
+ActivityThread -> ActivityThread.H: sendMessage(Message msg)
+ActivityThread.H->ActivityThread.H:handleMessage(Message msg)
+ActivityThread.H -> ActivityThread:handleBindApplication(AppBindData data)
+== 创建Application ==
+ActivityThread -> LoadedApk:makeApplication(boolean forceDefaultAppClass,Instrumentation instrumentation)
+LoadedApk -> Instrumentation: newApplication(ClassLoader cl,\n String className, Context context)
+Instrumentation->Instrumentation:getFactory(String pkg)
+Instrumentation ->AppComponentFactory:instantiateApplication(ClassLoader cl,\n String className)
+Instrumentation <-- AppComponentFactory: return Application
+== Application attach绑定上下文context ==
+Instrumentation -> Application:attach(Context context)
+
+Application->Application:attachBaseContext(Context base)
+
+ActivityThread->Instrumentation:callApplicationOnCreate(Application app)
+== Application onCreate可以开始具体业务 ==
+Instrumentation -> Application:onCreate()
+@enduml

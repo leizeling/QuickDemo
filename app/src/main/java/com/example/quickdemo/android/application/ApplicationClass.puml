@@ -1,0 +1,14 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+ContextWrapper <|--Application
+Context <|-- ContextWrapper
+class ContextWrapper{
+~Base:Context
+#attachBaseContext(Context base):void
+}
+ContextWrapper <|-- Service
+ContextThemeWrapper <|-- Activity
+ContextWrapper <|--ContextThemeWrapper
+Context <|-- ContextImpl
+ContextImpl <--left ContextWrapper:关联
+@enduml
